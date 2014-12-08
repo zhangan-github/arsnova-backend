@@ -21,6 +21,7 @@ package de.thm.arsnova.services;
 
 import java.io.Serializable;
 import java.util.AbstractMap.SimpleEntry;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
@@ -38,6 +39,7 @@ import de.thm.arsnova.entities.SessionInfo;
 import de.thm.arsnova.entities.User;
 import de.thm.arsnova.exceptions.ForbiddenException;
 import de.thm.arsnova.exceptions.NotFoundException;
+import de.thm.arsnova.exceptions.NotImplementedException;
 import de.thm.arsnova.socket.ARSnovaSocketIOServer;
 
 @Service
@@ -164,7 +166,19 @@ public class SessionService implements ISessionService {
 	@Override
 	@PreAuthorize("isAuthenticated()")
 	public final List<Session> getMyVisitedSessions() {
-		return databaseDao.getMyVisitedSessions(userService.getCurrentUser());
+		User user = userService.getCurrentUser();
+		List<Session> sessions = databaseDao.getMyVisitedSessions(user);
+
+		if (null != connectorClient) {
+			for (Session session : getCourseSessions(user)) {
+				if (!sessions.contains(session)) {
+					sessions.add(session);
+				}
+			}
+			Collections.sort(sessions, new SessionNameComparator());
+		}
+
+		return sessions;
 	}
 
 	@Override
@@ -202,6 +216,18 @@ public class SessionService implements ISessionService {
 			return keyword;
 		}
 		return generateKeyword();
+	}
+
+	@Override
+	public List<Session> getCourseSessions(User user) {
+		if (connectorClient == null) {
+			throw new NotImplementedException();
+		}
+
+		final List<Course> courses = connectorClient.getCourses(user.getUsername()).getCourse();
+		List<Session> sessions = databaseDao.getCourseSessions(courses);
+
+		return sessions;
 	}
 
 	@Override
