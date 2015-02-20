@@ -113,39 +113,36 @@ public class CouchDBDao implements IDatabaseDao {
 		view.setStartKeyArray(user.getUsername());
 		view.setEndKeyArray(user.getUsername(), "{}");
 
-		final ViewResults sessions = getDatabase().view(view);
+		final List<Session> sessions = new ListViewResults<>(
+			Session.class, getDatabase().view(view), new DocumentKeyMapper<Session>() {
 
-		final List<Session> result = new ArrayList<Session>();
-		for (final Document d : sessions.getResults()) {
-			final Session session = (Session) JSONObject.toBean(
-					d.getJSONObject().getJSONObject("value"),
-					Session.class
-					);
-			session.setCreator(d.getJSONObject().getJSONArray("key").getString(0));
-			session.setName(d.getJSONObject().getJSONArray("key").getString(1));
-			session.set_id(d.getId());
-			result.add(session);
-		}
-		return result;
+				@Override
+				public void mapKeys(Session session, String id, String rev, List<Object> keys) {
+					session.set_id(id);
+					session.setCreator((String) keys.get(0));
+					session.setName((String) keys.get(1));
+				}
+
+			}).getResultList();
+
+		return sessions;
 	}
 
 	@Override
 	public List<Session> getPublicPoolSessions() {
 		final NovaView view = new NovaView("session/public_pool_by_subject");
 
-		final ViewResults sessions = getDatabase().view(view);
+		final List<Session> sessions = new ListViewResults<>(
+			Session.class, getDatabase().view(view), new DocumentKeyMapper<Session>() {
 
-		final List<Session> result = new ArrayList<Session>();
+				@Override
+				public void mapKeys(Session session, String id, String rev, List<Object> keys) {
+					session.set_id(id);
+				}
 
-		for (final Document d : sessions.getResults()) {
-			final Session session = (Session) JSONObject.toBean(
-					d.getJSONObject().getJSONObject("value"),
-					Session.class
-					);
-			session.set_id(d.getId());
-			result.add(session);
-		}
-		return result;
+			}).getResultList();
+
+		return sessions;
 	}
 
 	@Override
@@ -160,20 +157,19 @@ public class CouchDBDao implements IDatabaseDao {
 		view.setStartKeyArray(user.getUsername());
 		view.setEndKeyArray(user.getUsername(), "{}");
 
-		final ViewResults sessions = getDatabase().view(view);
+		final List<Session> sessions = new ListViewResults<>(
+			Session.class, getDatabase().view(view), new DocumentKeyMapper<Session>() {
 
-		final List<Session> result = new ArrayList<Session>();
-		for (final Document d : sessions.getResults()) {
-			final Session session = (Session) JSONObject.toBean(
-					d.getJSONObject().getJSONObject("value"),
-					Session.class
-					);
-			session.setCreator(d.getJSONObject().getJSONArray("key").getString(0));
-			session.setName(d.getJSONObject().getJSONArray("key").getString(1));
-			session.set_id(d.getId());
-			result.add(session);
-		}
-		return result;
+				@Override
+				public void mapKeys(Session session, String id, String rev, List<Object> keys) {
+					session.set_id(id);
+					session.setCreator((String) keys.get(0));
+					session.setName((String) keys.get(1));
+				}
+
+			}).getResultList();
+
+		return sessions;
 	}
 
 	@Override
@@ -882,18 +878,19 @@ public class CouchDBDao implements IDatabaseDao {
 
 	@Override
 	public List<Answer> getFreetextAnswers(final String questionId) {
-		final List<Answer> answers = new ArrayList<Answer>();
 		final NovaView view = new NovaView("skill_question/freetext_answers_full");
 		view.setKey(questionId);
-		final ViewResults results = getDatabase().view(view);
-		if (results.getResults().isEmpty()) {
-			return answers;
-		}
-		for (final Document d : results.getResults()) {
-			final Answer a = (Answer) JSONObject.toBean(d.getJSONObject().getJSONObject("value"), Answer.class);
-			a.setQuestionId(questionId);
-			answers.add(a);
-		}
+
+		final List<Answer> answers = new ListViewResults<>(
+			Answer.class, getDatabase().view(view), new DocumentKeyMapper<Answer>() {
+
+				@Override
+				public void mapKeys(Answer answer, String id, String rev, List<Object> keys) {
+					answer.setQuestionId(questionId);
+				}
+
+			}).getResultList();
+
 		return answers;
 	}
 
@@ -901,19 +898,20 @@ public class CouchDBDao implements IDatabaseDao {
 	public List<Answer> getMyAnswers(final User me, final Session s) {
 		final NovaView view = new NovaView("answer/by_user_and_session_full");
 		view.setKey(me.getUsername(), s.get_id());
-		final ViewResults results = getDatabase().view(view);
-		final List<Answer> answers = new ArrayList<Answer>();
-		if (results == null || results.getResults() == null || results.getResults().isEmpty()) {
-			return answers;
-		}
-		for (final Document d : results.getResults()) {
-			final Answer a = (Answer) JSONObject.toBean(d.getJSONObject().getJSONObject("value"), Answer.class);
-			a.set_id(d.getId());
-			a.set_rev(d.getRev());
-			a.setUser(me.getUsername());
-			a.setSessionId(s.get_id());
-			answers.add(a);
-		}
+
+		final List<Answer> answers = new ListViewResults<>(
+			Answer.class, getDatabase().view(view), new DocumentKeyMapper<Answer>() {
+
+				@Override
+				public void mapKeys(Answer answer, String id, String rev, List<Object> keys) {
+					answer.set_id(id);
+					answer.set_rev(rev);
+					answer.setUser(me.getUsername());
+					answer.setSessionId(s.get_id());
+				}
+
+			}).getResultList();
+
 		return answers;
 	}
 
@@ -1035,18 +1033,19 @@ public class CouchDBDao implements IDatabaseDao {
 	}
 
 	private List<InterposedQuestion> createInterposedList(
-			final Session session, final ViewResults questions) {
-		final List<InterposedQuestion> result = new ArrayList<InterposedQuestion>();
-		for (final Document document : questions.getResults()) {
-			final InterposedQuestion question = (InterposedQuestion) JSONObject.toBean(
-					document.getJSONObject().getJSONObject("value"),
-					InterposedQuestion.class
-					);
-			question.setSessionId(session.getKeyword());
-			question.set_id(document.getId());
-			result.add(question);
-		}
-		return result;
+			final Session session, final ViewResults viewResults) {
+		final List<InterposedQuestion> questions = new ListViewResults<>(
+			InterposedQuestion.class, viewResults, new DocumentKeyMapper<InterposedQuestion>() {
+
+				@Override
+				public void mapKeys(InterposedQuestion question, String id, String rev, List<Object> keys) {
+					question.set_id(id);
+					question.setSessionId(session.getKeyword());
+				}
+
+			}).getResultList();
+
+		return questions;
 	}
 
 	public InterposedQuestion getInterposedQuestion(final String sessionKey, final String documentId) {
@@ -1301,17 +1300,15 @@ public class CouchDBDao implements IDatabaseDao {
 		final ExtendedView view = new ExtendedView("session/by_courseid");
 		view.setCourseIdKeys(courses);
 
-		final ViewResults sessions = getDatabase().view(view);
+		final List<Session> sessions = new ListViewResults<>(
+			Session.class, getDatabase().view(view), new DocumentKeyMapper<Session>() {
 
-		final List<Session> result = new ArrayList<Session>();
-		for (final Document d : sessions.getResults()) {
-			final Session session = (Session) JSONObject.toBean(
-					d.getJSONObject().getJSONObject("value"),
-					Session.class
-					);
-			result.add(session);
-		}
-		return result;
+				@Override
+				public void mapKeys(Session session, String id, String rev, List<Object> keys) {}
+
+			}).getResultList();
+
+		return sessions;
 	}
 
 	private static class ExtendedView extends NovaView {
