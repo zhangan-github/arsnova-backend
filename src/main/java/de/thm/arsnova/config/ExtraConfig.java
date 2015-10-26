@@ -21,7 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
-import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
+/*import org.springframework.cache.concurrent.ConcurrentMapCacheManager;*/
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -34,6 +34,11 @@ import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 import org.springframework.context.annotation.Import;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+
+/*import net.sf.ehcache.Cache;
+import net.sf.ehcache.CacheManager;*/
+import org.springframework.cache.ehcache.EhCacheCacheManager;
+import org.springframework.cache.ehcache.EhCacheManagerFactoryBean;
 
 import de.thm.arsnova.connector.client.ConnectorClient;
 import de.thm.arsnova.connector.client.ConnectorClientImpl;
@@ -116,7 +121,15 @@ public class ExtraConfig extends WebMvcConfigurerAdapter {
 
 	@Bean
 	public CacheManager cacheManager() {
-		return new ConcurrentMapCacheManager();
+		return new EhCacheCacheManager(ehCacheCacheManager().getObject());
+	}
+
+	@Bean
+	public EhCacheManagerFactoryBean ehCacheCacheManager() {
+		EhCacheManagerFactoryBean cmfb = new EhCacheManagerFactoryBean();
+		cmfb.setConfigLocation(new ClassPathResource("ehcache.xml"));
+		cmfb.setShared(true);
+		return cmfb;
 	}
 
 	@Bean
