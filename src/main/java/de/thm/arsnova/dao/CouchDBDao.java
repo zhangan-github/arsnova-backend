@@ -408,7 +408,7 @@ public class CouchDBDao implements IDatabaseDao, ApplicationEventPublisherAware 
 		return getQuestions(new NovaView(viewName), session);
 	}
 
-	@Cacheable("skillquestions")
+	@Cacheable(cacheNames="questions")
 	@Override
 	public List<Question> getSkillQuestionsForUsers(final Session session) {
 		String viewName = "skill_question/by_session_for_all_full";
@@ -417,7 +417,7 @@ public class CouchDBDao implements IDatabaseDao, ApplicationEventPublisherAware 
 		return getQuestions(view, session);
 	}
 
-	@Cacheable("skillquestions")
+	@Cacheable(cacheNames="questions")
 	@Override
 	public List<Question> getSkillQuestionsForTeachers(final Session session) {
 		String viewName = "skill_question/by_session_sorted_by_subject_and_text";
@@ -432,7 +432,7 @@ public class CouchDBDao implements IDatabaseDao, ApplicationEventPublisherAware 
 	}
 
 	@Override
-	@Cacheable("sessions")
+	@Cacheable(cacheNames="sessions")
 	public Session getSessionFromKeyword(final String keyword) {
 		final NovaView view = new NovaView("session/by_keyword");
 		view.setKey(keyword);
@@ -448,7 +448,7 @@ public class CouchDBDao implements IDatabaseDao, ApplicationEventPublisherAware 
 	}
 
 	@Override
-	@Cacheable("sessions")
+	@Cacheable(cacheNames="sessions")
 	public Session getSessionFromId(final String sessionId) {
 		final NovaView view = new NovaView("session/by_id");
 		view.setKey(sessionId);
@@ -699,7 +699,7 @@ public class CouchDBDao implements IDatabaseDao, ApplicationEventPublisherAware 
 		return null;
 	}
 
-	@Cacheable("questions")
+	@Cacheable(cacheNames="questions")
 	@Override
 	public Question getQuestion(final String id) {
 		try {
@@ -973,7 +973,7 @@ public class CouchDBDao implements IDatabaseDao, ApplicationEventPublisherAware 
 		return answers;
 	}
 
-	@Cacheable("answers")
+	@Cacheable(cacheNames="answers")
 	@Override
 	public List<Answer> getAnswers(final Question question) {
 		return this.getAnswers(question, question.getPiRound());
@@ -1216,7 +1216,7 @@ public class CouchDBDao implements IDatabaseDao, ApplicationEventPublisherAware 
 		return result;
 	}
 
-	@Cacheable("statistics")
+	@Cacheable(cacheNames="meta")
 	@Override
 	public Statistics getStatistics() {
 		final Statistics stats = new Statistics();
@@ -1570,7 +1570,7 @@ public class CouchDBDao implements IDatabaseDao, ApplicationEventPublisherAware 
 		}
 	}
 
-	@Cacheable("lecturequestions")
+	@Cacheable(cacheNames="questions")
 	@Override
 	public List<Question> getLectureQuestionsForUsers(final Session session) {
 		String viewName = "skill_question/lecture_question_by_session_for_all";
@@ -1587,7 +1587,7 @@ public class CouchDBDao implements IDatabaseDao, ApplicationEventPublisherAware 
 		return getQuestions(view, session);
 	}
 
-	@Cacheable("flashcardquestions")
+	@Cacheable(cacheNames="questions")
 	@Override
 	public List<Question> getFlashcardsForUsers(final Session session) {
 		String viewName = "skill_question/flashcard_by_session_for_all";
@@ -1604,7 +1604,7 @@ public class CouchDBDao implements IDatabaseDao, ApplicationEventPublisherAware 
 		return getQuestions(view, session);
 	}
 
-	@Cacheable("preparationquestions")
+	@Cacheable(cacheNames="questions")
 	@Override
 	public List<Question> getPreparationQuestionsForUsers(final Session session) {
 		String viewName = "skill_question/preparation_question_by_session_for_all";
@@ -1995,7 +1995,7 @@ public class CouchDBDao implements IDatabaseDao, ApplicationEventPublisherAware 
 		return true;
 	}
 
-	@Cacheable("learningprogress")
+	@Cacheable(cacheNames="learningprogress")
 	@Override
 	public CourseScore getLearningProgress(final Session session) {
 		final NovaView maximumValueView = new NovaView("learning_progress/maximum_value_of_question");
