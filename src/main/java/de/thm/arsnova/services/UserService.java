@@ -531,7 +531,7 @@ public class UserService implements IUserService {
 		MimeMessage msg = mailSender.createMimeMessage();
 		MimeMessageHelper helper = new MimeMessageHelper(msg, "UTF-8");
 		try {
-			helper.setFrom(mailSenderName + "<" + mailSenderAddress + ">");
+			helper.setFrom(mailSenderName);
 			helper.setTo(dbUser.getUsername());
 			helper.setSubject(subject);
 			helper.setText(body);

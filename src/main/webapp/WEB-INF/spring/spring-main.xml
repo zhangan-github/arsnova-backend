@@ -42,6 +42,20 @@
 
 	<bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
 		<property name="host" value="${mail.host}"/>
+		<property name="username" value="${mail.sender.name}"/>
+		<property name="password" value="${mail.sender.password}"/>
+		<property name="protocol" value="smtp"/>
+		<property name="port" value="${mail.port}" />
+		<property name="defaultEncoding" value="utf-8"/>
+		<property name="javaMailProperties">
+	   <props>
+	       <prop key="mail.smtp.auth">true</prop>
+	       <prop key="mail.smtp.port">${mail.port}</prop>
+				 <prop key="mail.user">${mail.sender.name}</prop>
+				 <prop key="mail.password">${mail.sender.password}</prop>
+				 <prop key="mail.smtp.host">${mail.host}</prop>
+	   </props>
+	</property>
 	</bean>
 
 	<bean id="databaseDao" class="de.thm.arsnova.dao.CouchDBDao" />
